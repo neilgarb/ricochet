@@ -11,26 +11,23 @@ func TestPositionEqual(t *testing.T) {
 	}
 }
 
-func TestBoardSetSize(t *testing.T) {
-	b := NewBoard()
-
-	if err := b.SetSize(-1); err == nil {
+func TestNewBoard(t *testing.T) {
+	if _, err := NewBoard(-1); err == nil {
 		t.Errorf("expected error")
 	}
-	if err := b.SetSize(0); err == nil {
+	if _, err := NewBoard(0); err == nil {
 		t.Errorf("expected error")
 	}
-	if err := b.SetSize(1); err != nil {
+	if _, err := NewBoard(10); err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
-	if err := b.SetSize(101); err == nil {
+	if _, err := NewBoard(101); err == nil {
 		t.Errorf("expected error")
 	}
 }
 
 func TestBoardOOB(t *testing.T) {
-	b := NewBoard()
-	b.SetSize(10)
+	b, _ := NewBoard(10)
 
 	if err := b.SetOOB(Position{-1, -1}); err == nil {
 		t.Errorf("expected error")
@@ -56,8 +53,7 @@ func TestBoardOOB(t *testing.T) {
 }
 
 func TestAddWall(t *testing.T) {
-	b := NewBoard()
-	b.SetSize(10)
+	b, _ := NewBoard(10)
 
 	w := Wall{Position{-1, -1}, DirectionNorth}
 	if err := b.AddWall(w); err == nil {
@@ -73,8 +69,7 @@ func TestAddWall(t *testing.T) {
 }
 
 func TestAddSink(t *testing.T) {
-	b := NewBoard()
-	b.SetSize(10)
+	b, _ := NewBoard(10)
 
 	tok := Token{ShapeCircle, ColourBlue}
 	if err := b.AddSink(tok, Position{-1, -1}); err == nil {
@@ -97,8 +92,7 @@ func TestAddSink(t *testing.T) {
 }
 
 func TestAddRobot(t *testing.T) {
-	b := NewBoard()
-	b.SetSize(10)
+	b, _ := NewBoard(10)
 
 	r := Robot{ColourRed}
 	if err := b.AddRobot(r, Position{-1, -1}); err == nil {
@@ -121,8 +115,7 @@ func TestAddRobot(t *testing.T) {
 }
 
 func TestValid(t *testing.T) {
-	b := NewBoard()
-	b.SetSize(10)
+	b, _ := NewBoard(10)
 
 	if b.Valid() {
 		t.Errorf("expected invalid")

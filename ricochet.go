@@ -11,6 +11,10 @@ const (
 	DirectionWest  Direction = 3
 )
 
+func (d Direction) Valid() bool {
+	return d >= 0 && d <= 3
+}
+
 type Shape int
 
 const (
@@ -19,6 +23,10 @@ const (
 	ShapeDiamond  Shape = 2
 	ShapeHexagon  Shape = 3
 )
+
+func (s Shape) Valid() bool {
+	return s >= 0 && s <= 3
+}
 
 var allShapes = []Shape{ShapeCircle, ShapeTriangle, ShapeDiamond, ShapeHexagon}
 
@@ -33,6 +41,10 @@ const (
 	// Additional robot colours:
 	ColourSilver Colour = 10
 )
+
+func (c Colour) ValidForToken() bool {
+	return c >= 0 && c <= 3
+}
 
 var allColours = []Colour{ColourBlue, ColourYellow, ColourGreen, ColourRed}
 
@@ -69,19 +81,15 @@ type Board struct {
 	robots map[Robot]Position // positions of robots
 }
 
-func NewBoard() *Board {
+func NewBoard(size int) (*Board, error) {
+	if size < 1 || size > 100 {
+		return nil, errors.New("invalid board size")
+	}
 	return &Board{
+		size:   size,
 		sinks:  make(map[Token]Position),
 		robots: make(map[Robot]Position),
-	}
-}
-
-func (b *Board) SetSize(size int) error {
-	if size < 1 || size > 100 {
-		return errors.New("invalid board size")
-	}
-	b.size = size
-	return nil
+	}, nil
 }
 
 func (b *Board) InBounds(p Position) bool {
