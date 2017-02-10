@@ -96,6 +96,30 @@ func TestAddSink(t *testing.T) {
 	}
 }
 
+func TestAddRobot(t *testing.T) {
+	b := NewBoard()
+	b.SetSize(10)
+
+	r := Robot{ColourRed}
+	if err := b.AddRobot(r, Position{-1, -1}); err == nil {
+		t.Errorf("expected error")
+	}
+	if err := b.AddRobot(r, Position{0, 0}); err != nil {
+		t.Errorf("expected success, got %v", err)
+	}
+	if err := b.AddRobot(r, Position{0, 1}); err == nil {
+		t.Errorf("expected error")
+	}
+
+	r = Robot{ColourBlue}
+	if err := b.AddRobot(r, Position{0, 0}); err == nil {
+		t.Errorf("expected error")
+	}
+	if err := b.AddRobot(r, Position{0, 1}); err != nil {
+		t.Errorf("expected success, got %v", err)
+	}
+}
+
 func TestValid(t *testing.T) {
 	b := NewBoard()
 	b.SetSize(10)
@@ -104,16 +128,22 @@ func TestValid(t *testing.T) {
 		t.Errorf("expected invalid")
 	}
 
-	tot := len(allShapes) * len(allColours)
 	i := 0
 	for _, s := range allShapes {
 		for _, c := range allColours {
 			i++
 			b.AddSink(Token{s, c}, Position{i / 10, i % 10})
-			if i < tot {
-				if b.Valid() {
-					t.Errorf("expected invalid")
-				}
+			if b.Valid() {
+				t.Errorf("expected invalid")
+			}
+		}
+	}
+
+	for i := 0; i < minRobots; i++ {
+		b.AddRobot(Robot{Colour(i)}, Position{i / 10, i % 10})
+		if i < minRobots-1 {
+			if b.Valid() {
+				t.Errorf("expected invalid")
 			}
 		}
 	}

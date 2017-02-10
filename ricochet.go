@@ -29,6 +29,9 @@ const (
 	ColourYellow Colour = 1
 	ColourGreen  Colour = 2
 	ColourRed    Colour = 3
+
+	// Additional robot colours:
+	ColourSilver Colour = 10
 )
 
 var allColours = []Colour{ColourBlue, ColourYellow, ColourGreen, ColourRed}
@@ -52,15 +55,25 @@ type Wall struct {
 	Direction Direction
 }
 
+type Robot struct {
+	Colour Colour
+}
+
+const minRobots = 4
+
 type Board struct {
-	size  int                // the width or height of the board
-	walls []Wall             // positions and directions of walls on the board
-	sinks map[Token]Position // positions and types of tokens on the board
-	oob   []Position         // positions which are out of bounds
+	size   int                // the width or height of the board
+	walls  []Wall             // positions and directions of walls on the board
+	sinks  map[Token]Position // positions and types of tokens on the board
+	oob    []Position         // positions which are out of bounds
+	robots map[Robot]Position // positions of robots
 }
 
 func NewBoard() *Board {
-	return &Board{sinks: make(map[Token]Position)}
+	return &Board{
+		sinks:  make(map[Token]Position),
+		robots: make(map[Robot]Position),
+	}
 }
 
 func (b *Board) SetSize(size int) error {
@@ -123,6 +136,24 @@ func (b *Board) AddSink(token Token, pos Position) error {
 	return nil
 }
 
+func (b *Board) AddRobot(robot Robot, pos Position) error {
+	if !b.InBounds(pos) {
+		return errors.New("position is oob")
+	}
+
+	for r, p := range b.robots {
+		if r.Colour == robot.Colour {
+			return errors.New("robot already added")
+		}
+		if p.Equal(pos) {
+			return errors.New("position already has a robot")
+		}
+	}
+
+	b.robots[robot] = pos
+	return nil
+}
+
 // Valid returns true if the board is correctly configured.
 func (b *Board) Valid() bool {
 	// Make sure all tokens are placed.
@@ -134,5 +165,11 @@ func (b *Board) Valid() bool {
 			}
 		}
 	}
+
+	// Make sure there are at least four robots.
+	if len(b.robots) < minRobots {
+		return false
+	}
+
 	return true
 }
