@@ -22,8 +22,9 @@ import (
 // `direction` is a number from 0 - 3, where 0 is north, 1 is east, etc.
 // `colour` is a number from 0 - 3 for `SINK`, and any number for `ROBOT`.
 // `shape` is a number from 0 - 3.
-func ReadBoard(r *bufio.Reader) (*Board, error) {
+func ReadBoard(r *bufio.Reader) (*Board, *State, error) {
 	var b *Board
+	var st *State
 	line := 0
 	for {
 		line++
@@ -31,47 +32,47 @@ func ReadBoard(r *bufio.Reader) (*Board, error) {
 		s, err := r.ReadString('\n')
 		if err == io.EOF {
 		} else if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		s = strings.TrimSpace(s)
 		if s == "" {
-			if b == nil {
-				return nil, errors.New("no board")
+			if b == nil || st == nil {
+				return nil, nil, errors.New("no board or state")
 			}
-			return b, nil
+			return b, st, nil
 		}
 
 		sl := strings.Fields(s)
 		if len(sl) == 0 {
-			return nil, fmt.Errorf("error line %d: no command", line)
+			return nil, nil, fmt.Errorf("error line %d: no command", line)
 		}
 
 		switch sl[0] {
 		case "BOARD":
 			if board, err := readBoardBoard(sl[1:], b); err != nil {
-				return nil, fmt.Errorf("error line %d: %v", line, err)
+				return nil, nil, fmt.Errorf("error line %d: %v", line, err)
 			} else {
 				b = board
 			}
 		case "OOB":
 			if err := readBoardOOB(sl[1:], b); err != nil {
-				return nil, fmt.Errorf("error line %d: %v", line, err)
+				return nil, nil, fmt.Errorf("error line %d: %v", line, err)
 			}
 		case "WALL":
 			if err := readBoardWall(sl[1:], b); err != nil {
-				return nil, fmt.Errorf("error line %d: %v", line, err)
+				return nil, nil, fmt.Errorf("error line %d: %v", line, err)
 			}
 		case "SINK":
 			if err := readBoardSink(sl[1:], b); err != nil {
-				return nil, fmt.Errorf("error line %d: %v", line, err)
+				return nil, nil, fmt.Errorf("error line %d: %v", line, err)
 			}
 		case "ROBOT":
-			if err := readBoardRobot(sl[1:], b); err != nil {
-				return nil, fmt.Errorf("error line %d: %v", line, err)
+			if err := readBoardRobot(sl[1:], st, b); err != nil {
+				return nil, nil, fmt.Errorf("error line %d: %v", line, err)
 			}
 		default:
-			return nil, fmt.Errorf(
+			return nil, nil, fmt.Errorf(
 				"error line %d: unknown command %q", line, sl[0])
 		}
 	}
@@ -157,9 +158,9 @@ func readBoardSink(tl []string, b *Board) error {
 	return b.AddSink(Token{shape, col}, pos)
 }
 
-func readBoardRobot(tl []string, b *Board) error {
-	if b == nil {
-		return errors.New("don't have a board yet")
+func readBoardRobot(tl []string, st *State, b *Board) error {
+	if st == nil {
+		return errors.New("don't have a state yet")
 	}
 	if len(tl) != 2 {
 		return errors.New("bad syntax")
@@ -172,7 +173,7 @@ func readBoardRobot(tl []string, b *Board) error {
 	if err != nil {
 		return err
 	}
-	return b.AddRobot(Robot{Colour(c)}, pos)
+	return st.AddRobot(Robot{Colour(c)}, pos, b)
 }
 
 func readPos(pos string) (Position, error) {
