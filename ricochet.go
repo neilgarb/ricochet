@@ -223,3 +223,14 @@ func (b *Board) CanMove(pos Position, dir Direction) bool {
 	}
 	return true
 }
+
+// Move returns the position a robot would end up in if it started in `pos` and
+// moved in direction `dir`.
+func (b *Board) Move(pos Position, dir Direction) Position {
+	for {
+		if !b.CanMove(pos, dir) {
+			return pos
+		}
+		pos = pos.Next(dir)
+	}
+}

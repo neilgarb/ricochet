@@ -228,3 +228,35 @@ func TestBoardCanMove(t *testing.T) {
 		}
 	}
 }
+
+type moveTest struct {
+	Start     Position
+	Direction Direction
+	End       Position
+}
+
+func TestBoardMove(t *testing.T) {
+	b, _ := NewBoard(10)
+	b.AddWall(Wall{Position{1, 1}, DirectionNorth})
+	b.SetOOB(Position{5, 5})
+
+	tests := []moveTest{
+		{Position{0, 0}, DirectionNorth, Position{0, 0}},
+		{Position{0, 0}, DirectionEast, Position{9, 0}},
+		{Position{0, 0}, DirectionSouth, Position{0, 9}},
+		{Position{0, 0}, DirectionWest, Position{0, 0}},
+
+		{Position{1, 0}, DirectionSouth, Position{1, 0}}, // wall in the way
+		{Position{1, 9}, DirectionNorth, Position{1, 1}}, // wall in the way
+
+		{Position{1, 5}, DirectionEast, Position{4, 5}}, // oob in the way
+	}
+
+	for _, test := range tests {
+		end := b.Move(test.Start, test.Direction)
+		if !end.Equal(test.End) {
+			t.Errorf("expected Move(%v, %d) = %v, got %v",
+				test.Start, test.Direction, test.End, end)
+		}
+	}
+}
