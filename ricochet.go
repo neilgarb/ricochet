@@ -74,10 +74,11 @@ type Robot struct {
 const minRobots = 4
 
 type Board struct {
-	size  int                // the width or height of the board
-	walls []Wall             // positions and directions of walls on the board
-	sinks map[Token]Position // positions and types of tokens on the board
-	oob   []Position         // positions which are out of bounds
+	size   int                // the width or height of the board
+	walls  []Wall             // positions and directions of walls on the board
+	sinks  map[Token]Position // positions and types of tokens on the board
+	oob    []Position         // positions which are out of bounds
+	robots map[Robot]Position // positions of robots
 }
 
 func NewBoard(size int) (*Board, error) {
@@ -85,8 +86,9 @@ func NewBoard(size int) (*Board, error) {
 		return nil, errors.New("invalid board size")
 	}
 	return &Board{
-		size:  size,
-		sinks: make(map[Token]Position),
+		size:   size,
+		sinks:  make(map[Token]Position),
+		robots: make(map[Robot]Position),
 	}, nil
 }
 
@@ -142,16 +144,12 @@ func (b *Board) AddSink(token Token, pos Position) error {
 	return nil
 }
 
-type State struct {
-	Robots map[Robot]Position
-}
-
-func (s *State) AddRobot(robot Robot, pos Position, b *Board) error {
+func (b *Board) AddRobot(robot Robot, pos Position) error {
 	if !b.InBounds(pos) {
 		return errors.New("position is oob")
 	}
 
-	for r, p := range s.Robots {
+	for r, p := range b.robots {
 		if r.Colour == robot.Colour {
 			return errors.New("robot already added")
 		}
@@ -160,16 +158,16 @@ func (s *State) AddRobot(robot Robot, pos Position, b *Board) error {
 		}
 	}
 
-	s.Robots[robot] = pos
+	b.robots[robot] = pos
 	return nil
 }
 
 // Valid returns true if the board is correctly configured.
-func Valid(b *Board, s *State) bool {
+func (b *Board) Valid() bool {
 	// Make sure all tokens are placed.
-	for _, shape := range allShapes {
+	for _, s := range allShapes {
 		for _, c := range allColours {
-			t := Token{shape, c}
+			t := Token{s, c}
 			if _, ok := b.sinks[t]; !ok {
 				return false
 			}
@@ -177,24 +175,9 @@ func Valid(b *Board, s *State) bool {
 	}
 
 	// Make sure there are at least four robots.
-	if len(s.Robots) < minRobots {
+	if len(b.robots) < minRobots {
 		return false
 	}
 
 	return true
-}
-
-func Solved(pos *Position, s *State) bool {
-	for _, p := range s.Robots {
-		if pos.Equal(p) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func Move(c Colour, d Direction, s *State) *State {
-	// TODO implement
-	return nil
 }
