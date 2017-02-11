@@ -15,6 +15,11 @@ func (d Direction) Valid() bool {
 	return d >= 0 && d <= 3
 }
 
+// Flip returns the opposite direction to `d`.
+func (d Direction) Flip() Direction {
+	return (d + 2) % 4
+}
+
 type Shape int
 
 const (
@@ -60,6 +65,20 @@ type Position struct {
 
 func (p Position) Equal(p2 Position) bool {
 	return p.X == p2.X && p.Y == p2.Y
+}
+
+func (p Position) Next(dir Direction) Position {
+	switch dir {
+	case DirectionNorth:
+		return Position{p.X, p.Y - 1}
+	case DirectionEast:
+		return Position{p.X + 1, p.Y}
+	case DirectionSouth:
+		return Position{p.X, p.Y + 1}
+	case DirectionWest:
+		return Position{p.X - 1, p.Y}
+	}
+	return p
 }
 
 type Wall struct {
@@ -179,5 +198,28 @@ func (b *Board) Valid() bool {
 		return false
 	}
 
+	return true
+}
+
+// CanMove returns true if a robot can move from the given position in the given
+// direction.
+//
+// Possible reasons a robot couldn't move:
+// - The next block is out of bounds
+// - There's a wall in the way
+// - TODO: There's a robot in the way
+func (b *Board) CanMove(pos Position, dir Direction) bool {
+	next := pos.Next(dir)
+	if !b.InBounds(next) {
+		return false
+	}
+	for _, w := range b.walls {
+		if w.Position.Equal(pos) && w.Direction == dir {
+			return false
+		}
+		if w.Position.Equal(next) && w.Direction == dir.Flip() {
+			return false
+		}
+	}
 	return true
 }
