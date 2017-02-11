@@ -91,15 +91,13 @@ func TestBoardOOB(t *testing.T) {
 func TestAddWall(t *testing.T) {
 	b, _ := NewBoard(10)
 
-	w := Wall{Position{-1, -1}, DirectionNorth}
-	if err := b.AddWall(w); err == nil {
+	if err := b.AddWall(Position{-1, -1}, DirectionNorth); err == nil {
 		t.Errorf("expected error")
 	}
-	w = Wall{Position{0, 0}, DirectionNorth}
-	if err := b.AddWall(w); err != nil {
+	if err := b.AddWall(Position{0, 0}, DirectionNorth); err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
-	if err := b.AddWall(w); err == nil {
+	if err := b.AddWall(Position{0, 0}, DirectionNorth); err == nil {
 		t.Errorf("expected error")
 	}
 }
@@ -190,7 +188,7 @@ type canMoveTest struct {
 
 func TestBoardCanMove(t *testing.T) {
 	b, _ := NewBoard(10)
-	b.AddWall(Wall{Position{1, 1}, DirectionNorth})
+	b.AddWall(Position{1, 1}, DirectionNorth)
 	b.SetOOB(Position{5, 5})
 
 	tests := []canMoveTest{
@@ -237,7 +235,7 @@ type moveTest struct {
 
 func TestBoardMove(t *testing.T) {
 	b, _ := NewBoard(10)
-	b.AddWall(Wall{Position{1, 1}, DirectionNorth})
+	b.AddWall(Position{1, 1}, DirectionNorth)
 	b.SetOOB(Position{5, 5})
 
 	tests := []moveTest{

@@ -124,7 +124,7 @@ func readBoardWall(tl []string, b *Board) error {
 	if !dir.Valid() {
 		return errors.New("bad direction")
 	}
-	return b.AddWall(Wall{pos, dir})
+	return b.AddWall(pos, dir)
 }
 
 func readBoardSink(tl []string, b *Board) error {

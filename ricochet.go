@@ -81,9 +81,13 @@ func (p Position) Next(dir Direction) Position {
 	return p
 }
 
-type Wall struct {
-	Position  Position
-	Direction Direction
+type Block struct {
+	oob   bool
+	walls map[Direction]bool
+}
+
+func NewBlock() Block {
+	return Block{walls: make(map[Direction]bool)}
 }
 
 type Robot struct {
@@ -94,9 +98,8 @@ const minRobots = 4
 
 type Board struct {
 	size   int                // the width or height of the board
-	walls  []Wall             // positions and directions of walls on the board
+	blocks map[Position]Block // positions of blocks of interest
 	sinks  map[Token]Position // positions and types of tokens on the board
-	oob    []Position         // positions which are out of bounds
 	robots map[Robot]Position // positions of robots
 }
 
@@ -106,9 +109,18 @@ func NewBoard(size int) (*Board, error) {
 	}
 	return &Board{
 		size:   size,
+		blocks: make(map[Position]Block),
 		sinks:  make(map[Token]Position),
 		robots: make(map[Robot]Position),
 	}, nil
+}
+
+func (b *Board) getBlock(pos Position) Block {
+	block, ok := b.blocks[pos]
+	if !ok {
+		return NewBlock()
+	}
+	return block
 }
 
 func (b *Board) InBounds(p Position) bool {
@@ -118,8 +130,8 @@ func (b *Board) InBounds(p Position) bool {
 	if p.Y < 0 || p.Y >= b.size {
 		return false
 	}
-	for _, o := range b.oob {
-		if o.Equal(p) {
+	for pos, block := range b.blocks {
+		if pos.Equal(p) && block.oob {
 			return false
 		}
 	}
@@ -130,20 +142,25 @@ func (b *Board) SetOOB(pos Position) error {
 	if !b.InBounds(pos) {
 		return errors.New("position already oob")
 	}
-	b.oob = append(b.oob, pos)
+	block := b.getBlock(pos)
+	block.oob = true
+	b.blocks[pos] = block
 	return nil
 }
 
-func (b *Board) AddWall(wall Wall) error {
-	if !b.InBounds(wall.Position) {
+func (b *Board) AddWall(pos Position, dir Direction) error {
+	if !b.InBounds(pos) {
 		return errors.New("wall out of bounds")
 	}
-	for _, w := range b.walls {
-		if w.Position.Equal(wall.Position) && w.Direction == wall.Direction {
-			return errors.New("duplicate wall")
-		}
+
+	block := b.getBlock(pos)
+	if block.walls[dir] {
+		return errors.New("duplicate wall")
 	}
-	b.walls = append(b.walls, wall)
+
+	block.walls[dir] = true
+	b.blocks[pos] = block
+
 	return nil
 }
 
@@ -213,14 +230,15 @@ func (b *Board) CanMove(pos Position, dir Direction) bool {
 	if !b.InBounds(next) {
 		return false
 	}
-	for _, w := range b.walls {
-		if w.Position.Equal(pos) && w.Direction == dir {
-			return false
-		}
-		if w.Position.Equal(next) && w.Direction == dir.Flip() {
-			return false
-		}
+
+	if b.blocks[pos].walls[dir] {
+		return false
 	}
+
+	if b.blocks[next].walls[dir.Flip()] {
+		return false
+	}
+
 	return true
 }
 
