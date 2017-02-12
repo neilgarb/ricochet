@@ -11,6 +11,9 @@ const (
 	DirectionWest  Direction = 3
 )
 
+var allDirections = []Direction{DirectionNorth, DirectionEast, DirectionSouth,
+	DirectionWest}
+
 func (d Direction) Valid() bool {
 	return d >= 0 && d <= 3
 }
@@ -117,6 +120,43 @@ func (s *State) AddRobot(pos Position, robot Robot) error {
 	return nil
 }
 
+// CanMove returns true if a robot can move from the given position in the given
+// direction.
+func (s *State) CanMove(pos Position, dir Direction) bool {
+	next := pos.Next(dir)
+
+	// Next block is OOB...
+	if !s.board.InBounds(next) {
+		return false
+	}
+
+	// There's a wall in the way...
+	if s.board.blocks[pos].walls[dir] {
+		return false
+	}
+	if s.board.blocks[next].walls[dir.Flip()] {
+		return false
+	}
+
+	// There's a robot in the way...
+	if _, ok := s.robots[next]; ok {
+		return false
+	}
+
+	return true
+}
+
+// Move returns the position a robot would end up in if it started in `pos` and
+// moved in direction `dir`.
+func (s *State) Move(pos Position, dir Direction) Position {
+	for {
+		if !s.CanMove(pos, dir) {
+			return pos
+		}
+		pos = pos.Next(dir)
+	}
+}
+
 const minRobots = 4
 
 type Board struct {
@@ -216,39 +256,4 @@ func (b *Board) Valid() bool {
 		}
 	}
 	return true
-}
-
-// CanMove returns true if a robot can move from the given position in the given
-// direction.
-//
-// Possible reasons a robot couldn't move:
-// - The next block is out of bounds
-// - There's a wall in the way
-// - TODO: There's a robot in the way
-func (b *Board) CanMove(pos Position, dir Direction) bool {
-	next := pos.Next(dir)
-	if !b.InBounds(next) {
-		return false
-	}
-
-	if b.blocks[pos].walls[dir] {
-		return false
-	}
-
-	if b.blocks[next].walls[dir.Flip()] {
-		return false
-	}
-
-	return true
-}
-
-// Move returns the position a robot would end up in if it started in `pos` and
-// moved in direction `dir`.
-func (b *Board) Move(pos Position, dir Direction) Position {
-	for {
-		if !b.CanMove(pos, dir) {
-			return pos
-		}
-		pos = pos.Next(dir)
-	}
 }

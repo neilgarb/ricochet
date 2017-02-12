@@ -71,6 +71,92 @@ func TestStateAddRobot(t *testing.T) {
 	}
 }
 
+type canMoveTest struct {
+	Position  Position
+	Direction Direction
+	CanMove   bool
+}
+
+func TestStateCanMove(t *testing.T) {
+	b, _ := NewBoard(10)
+	b.AddWall(Position{1, 1}, DirectionNorth)
+	b.SetOOB(Position{5, 5})
+	s := b.NewState()
+	s.AddRobot(Position{7, 7}, Robot{ColourBlue})
+
+	tests := []canMoveTest{
+		{Position{0, 0}, DirectionNorth, false}, // oob
+		{Position{0, 0}, DirectionEast, true},
+		{Position{0, 0}, DirectionSouth, true},
+		{Position{0, 0}, DirectionWest, false}, // oob
+
+		{Position{1, 1}, DirectionNorth, false}, // wall in the way
+		{Position{1, 1}, DirectionEast, true},
+		{Position{1, 1}, DirectionSouth, true},
+		{Position{1, 1}, DirectionWest, true},
+
+		{Position{1, 0}, DirectionNorth, false}, // oob
+		{Position{1, 0}, DirectionEast, true},
+		{Position{1, 0}, DirectionSouth, false}, // wall in the way
+		{Position{1, 0}, DirectionWest, true},
+
+		{Position{9, 9}, DirectionNorth, true},
+		{Position{9, 9}, DirectionEast, false},  // oob
+		{Position{9, 9}, DirectionSouth, false}, // oob
+		{Position{9, 9}, DirectionWest, true},
+
+		{Position{6, 5}, DirectionNorth, true},
+		{Position{6, 5}, DirectionEast, true},
+		{Position{6, 5}, DirectionSouth, true},
+		{Position{6, 5}, DirectionWest, false}, // oob
+
+		{Position{6, 7}, DirectionNorth, true},
+		{Position{6, 7}, DirectionEast, false}, // robot in the way
+		{Position{6, 7}, DirectionSouth, true},
+		{Position{6, 7}, DirectionWest, true},
+	}
+
+	for _, test := range tests {
+		canMove := s.CanMove(test.Position, test.Direction)
+		if canMove != test.CanMove {
+			t.Errorf("expected CanMove(%v, %d) = %v",
+				test.Position, test.Direction, test.CanMove)
+		}
+	}
+}
+
+type moveTest struct {
+	Start     Position
+	Direction Direction
+	End       Position
+}
+
+func TestStateMove(t *testing.T) {
+	b, _ := NewBoard(10)
+	b.AddWall(Position{1, 1}, DirectionNorth)
+	b.SetOOB(Position{5, 5})
+	s := b.NewState()
+
+	tests := []moveTest{
+		{Position{0, 0}, DirectionNorth, Position{0, 0}},
+		{Position{0, 0}, DirectionEast, Position{9, 0}},
+		{Position{0, 0}, DirectionSouth, Position{0, 9}},
+		{Position{0, 0}, DirectionWest, Position{0, 0}},
+
+		{Position{1, 0}, DirectionSouth, Position{1, 0}}, // wall in the way
+		{Position{1, 9}, DirectionNorth, Position{1, 1}}, // wall in the way
+
+		{Position{1, 5}, DirectionEast, Position{4, 5}}, // oob in the way
+	}
+
+	for _, test := range tests {
+		end := s.Move(test.Start, test.Direction)
+		if !end.Equal(test.End) {
+			t.Errorf("expected Move(%v, %d) = %v, got %v",
+				test.Start, test.Direction, test.End, end)
+		}
+	}
+}
 func TestNewBoard(t *testing.T) {
 	if _, err := NewBoard(-1); err == nil {
 		t.Errorf("expected error")
@@ -170,84 +256,5 @@ func TestValid(t *testing.T) {
 
 	if !b.Valid() {
 		t.Errorf("expected valid")
-	}
-}
-
-type canMoveTest struct {
-	Position  Position
-	Direction Direction
-	CanMove   bool
-}
-
-func TestBoardCanMove(t *testing.T) {
-	b, _ := NewBoard(10)
-	b.AddWall(Position{1, 1}, DirectionNorth)
-	b.SetOOB(Position{5, 5})
-
-	tests := []canMoveTest{
-		{Position{0, 0}, DirectionNorth, false}, // oob
-		{Position{0, 0}, DirectionEast, true},
-		{Position{0, 0}, DirectionSouth, true},
-		{Position{0, 0}, DirectionWest, false}, // oob
-
-		{Position{1, 1}, DirectionNorth, false}, // wall in the way
-		{Position{1, 1}, DirectionEast, true},
-		{Position{1, 1}, DirectionSouth, true},
-		{Position{1, 1}, DirectionWest, true},
-
-		{Position{1, 0}, DirectionNorth, false}, // oob
-		{Position{1, 0}, DirectionEast, true},
-		{Position{1, 0}, DirectionSouth, false}, // wall in the way
-		{Position{1, 0}, DirectionWest, true},
-
-		{Position{9, 9}, DirectionNorth, true},
-		{Position{9, 9}, DirectionEast, false},  // oob
-		{Position{9, 9}, DirectionSouth, false}, // oob
-		{Position{9, 9}, DirectionWest, true},
-
-		{Position{6, 5}, DirectionNorth, true},
-		{Position{6, 5}, DirectionEast, true},
-		{Position{6, 5}, DirectionSouth, true},
-		{Position{6, 5}, DirectionWest, false}, // oob
-	}
-
-	for _, test := range tests {
-		canMove := b.CanMove(test.Position, test.Direction)
-		if canMove != test.CanMove {
-			t.Errorf("expected CanMove(%v, %d) = %v",
-				test.Position, test.Direction, test.CanMove)
-		}
-	}
-}
-
-type moveTest struct {
-	Start     Position
-	Direction Direction
-	End       Position
-}
-
-func TestBoardMove(t *testing.T) {
-	b, _ := NewBoard(10)
-	b.AddWall(Position{1, 1}, DirectionNorth)
-	b.SetOOB(Position{5, 5})
-
-	tests := []moveTest{
-		{Position{0, 0}, DirectionNorth, Position{0, 0}},
-		{Position{0, 0}, DirectionEast, Position{9, 0}},
-		{Position{0, 0}, DirectionSouth, Position{0, 9}},
-		{Position{0, 0}, DirectionWest, Position{0, 0}},
-
-		{Position{1, 0}, DirectionSouth, Position{1, 0}}, // wall in the way
-		{Position{1, 9}, DirectionNorth, Position{1, 1}}, // wall in the way
-
-		{Position{1, 5}, DirectionEast, Position{4, 5}}, // oob in the way
-	}
-
-	for _, test := range tests {
-		end := b.Move(test.Start, test.Direction)
-		if !end.Equal(test.End) {
-			t.Errorf("expected Move(%v, %d) = %v, got %v",
-				test.Start, test.Direction, test.End, end)
-		}
 	}
 }
