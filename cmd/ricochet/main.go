@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	b, err := ricochet.ReadBoard(bufio.NewReader(os.Stdin))
+	b, _, err := ricochet.ReadBoard(bufio.NewReader(os.Stdin))
 	if err != nil {
 		panic(err)
 	}
