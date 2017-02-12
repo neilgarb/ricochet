@@ -47,6 +47,30 @@ func TestPositionNext(t *testing.T) {
 	}
 }
 
+func TestStateAddRobot(t *testing.T) {
+	b, _ := NewBoard(10)
+	s := b.NewState()
+
+	r := Robot{ColourRed}
+	if err := s.AddRobot(Position{-1, -1}, r); err == nil {
+		t.Errorf("expected error")
+	}
+	if err := s.AddRobot(Position{0, 0}, r); err != nil {
+		t.Errorf("expected success, got %v", err)
+	}
+	if err := s.AddRobot(Position{0, 1}, r); err == nil {
+		t.Errorf("expected error")
+	}
+
+	r = Robot{ColourBlue}
+	if err := s.AddRobot(Position{0, 0}, r); err == nil {
+		t.Errorf("expected error")
+	}
+	if err := s.AddRobot(Position{0, 1}, r); err != nil {
+		t.Errorf("expected success, got %v", err)
+	}
+}
+
 func TestNewBoard(t *testing.T) {
 	if _, err := NewBoard(-1); err == nil {
 		t.Errorf("expected error")
@@ -125,29 +149,6 @@ func TestAddSink(t *testing.T) {
 	}
 }
 
-func TestAddRobot(t *testing.T) {
-	b, _ := NewBoard(10)
-
-	r := Robot{ColourRed}
-	if err := b.AddRobot(r, Position{-1, -1}); err == nil {
-		t.Errorf("expected error")
-	}
-	if err := b.AddRobot(r, Position{0, 0}); err != nil {
-		t.Errorf("expected success, got %v", err)
-	}
-	if err := b.AddRobot(r, Position{0, 1}); err == nil {
-		t.Errorf("expected error")
-	}
-
-	r = Robot{ColourBlue}
-	if err := b.AddRobot(r, Position{0, 0}); err == nil {
-		t.Errorf("expected error")
-	}
-	if err := b.AddRobot(r, Position{0, 1}); err != nil {
-		t.Errorf("expected success, got %v", err)
-	}
-}
-
 func TestValid(t *testing.T) {
 	b, _ := NewBoard(10)
 
@@ -155,21 +156,13 @@ func TestValid(t *testing.T) {
 		t.Errorf("expected invalid")
 	}
 
+	tot := len(allShapes) * len(allColours)
 	i := 0
 	for _, s := range allShapes {
 		for _, c := range allColours {
 			i++
 			b.AddSink(Token{s, c}, Position{i / 10, i % 10})
-			if b.Valid() {
-				t.Errorf("expected invalid")
-			}
-		}
-	}
-
-	for i := 0; i < minRobots; i++ {
-		b.AddRobot(Robot{Colour(i)}, Position{i / 10, i % 10})
-		if i < minRobots-1 {
-			if b.Valid() {
+			if i < tot-1 && b.Valid() {
 				t.Errorf("expected invalid")
 			}
 		}

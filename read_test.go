@@ -8,7 +8,7 @@ import (
 
 func TestReadBoardBlank(t *testing.T) {
 	s := ``
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -16,7 +16,7 @@ func TestReadBoardBlank(t *testing.T) {
 
 func TestReadBoardNoBoard(t *testing.T) {
 	s := `OOB 10,2`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -25,7 +25,7 @@ func TestReadBoardNoBoard(t *testing.T) {
 func TestReadBoardDoubleBoard(t *testing.T) {
 	s := `BOARD 20
 BOARD 10`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -33,7 +33,7 @@ BOARD 10`
 
 func TestReadBoardSimple(t *testing.T) {
 	s := `BOARD 20`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -42,28 +42,28 @@ func TestReadBoardSimple(t *testing.T) {
 func TestReadBoardOOB(t *testing.T) {
 	s := `BOARD 10
 OOB`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 OOB apple`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 OOB -1,-1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 OOB 1,1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -71,7 +71,7 @@ OOB 1,1`
 	s = `BOARD 10
 OOB 1,1
 OOB 1,1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -80,28 +80,28 @@ OOB 1,1`
 func TestReadBoardWall(t *testing.T) {
 	s := `BOARD 10
 WALL`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 WALL apple`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 WALL -1,-1 0`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 WALL 1,1 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -109,7 +109,7 @@ WALL 1,1 1`
 	s = `BOARD 10
 WALL 1,1 1
 WALL 1,1 2`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -117,7 +117,7 @@ WALL 1,1 2`
 	s = `BOARD 10
 WALL 1,1 1
 WALL 1,1 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -126,28 +126,28 @@ WALL 1,1 1`
 func TestReadBoardSink(t *testing.T) {
 	s := `BOARD 10
 SINK`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 SINK apple`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 SINK -1,-1 0 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 SINK 1,1 0 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -155,7 +155,7 @@ SINK 1,1 0 1`
 	s = `BOARD 10
 SINK 1,1 1 1
 SINK 1,2 2 2`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -163,7 +163,7 @@ SINK 1,2 2 2`
 	s = `BOARD 10
 SINK 1,1 1 1
 SINK 1,1 2 2`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -172,28 +172,28 @@ SINK 1,1 2 2`
 func TestReadBoardRobot(t *testing.T) {
 	s := `BOARD 10
 ROBOT`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 ROBOT apple`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 ROBOT -1,-1 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
 
 	s = `BOARD 10
 ROBOT 1,1 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -201,7 +201,7 @@ ROBOT 1,1 1`
 	s = `BOARD 10
 ROBOT 1,1 1
 ROBOT 1,2 2`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}
@@ -209,7 +209,7 @@ ROBOT 1,2 2`
 	s = `BOARD 10
 SINK 1,1 1
 SINK 1,2 1`
-	_, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err = ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err == nil {
 		t.Errorf("expected error")
 	}
@@ -281,7 +281,7 @@ ROBOT 3,2 0
 ROBOT 10,5 1
 ROBOT 1,14 2
 ROBOT 13,11 3`
-	_, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
+	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {
 		t.Errorf("expected success, got %v", err)
 	}

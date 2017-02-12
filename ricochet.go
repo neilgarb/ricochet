@@ -94,13 +94,35 @@ type Robot struct {
 	Colour Colour
 }
 
+type State struct {
+	board  *Board
+	robots map[Position]Robot
+}
+
+func (s *State) AddRobot(pos Position, robot Robot) error {
+	if !s.board.InBounds(pos) {
+		return errors.New("position out of bounds")
+	}
+
+	for p, r := range s.robots {
+		if p.Equal(pos) {
+			return errors.New("position already has a robot")
+		}
+		if r.Colour == robot.Colour {
+			return errors.New("robot already added")
+		}
+	}
+
+	s.robots[pos] = robot
+	return nil
+}
+
 const minRobots = 4
 
 type Board struct {
 	size   int                // the width or height of the board
 	blocks map[Position]Block // positions of blocks of interest
 	sinks  map[Token]Position // positions and types of tokens on the board
-	robots map[Robot]Position // positions of robots
 }
 
 func NewBoard(size int) (*Board, error) {
@@ -111,8 +133,11 @@ func NewBoard(size int) (*Board, error) {
 		size:   size,
 		blocks: make(map[Position]Block),
 		sinks:  make(map[Token]Position),
-		robots: make(map[Robot]Position),
 	}, nil
+}
+
+func (b *Board) NewState() *State {
+	return &State{b, make(map[Position]Robot)}
 }
 
 func (b *Board) getBlock(pos Position) Block {
@@ -180,27 +205,8 @@ func (b *Board) AddSink(token Token, pos Position) error {
 	return nil
 }
 
-func (b *Board) AddRobot(robot Robot, pos Position) error {
-	if !b.InBounds(pos) {
-		return errors.New("position is oob")
-	}
-
-	for r, p := range b.robots {
-		if r.Colour == robot.Colour {
-			return errors.New("robot already added")
-		}
-		if p.Equal(pos) {
-			return errors.New("position already has a robot")
-		}
-	}
-
-	b.robots[robot] = pos
-	return nil
-}
-
 // Valid returns true if the board is correctly configured.
 func (b *Board) Valid() bool {
-	// Make sure all tokens are placed.
 	for _, s := range allShapes {
 		for _, c := range allColours {
 			t := Token{s, c}
@@ -209,12 +215,6 @@ func (b *Board) Valid() bool {
 			}
 		}
 	}
-
-	// Make sure there are at least four robots.
-	if len(b.robots) < minRobots {
-		return false
-	}
-
 	return true
 }
 
