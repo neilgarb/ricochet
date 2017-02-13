@@ -279,7 +279,7 @@ SINK 4,13 3 2
 SINK 11,14 2 0
 ROBOT 3,2 0
 ROBOT 10,5 1
-ROBOT 1,14 2
+ROBOT 5,1 2
 ROBOT 13,11 3`
 	_, _, err := ReadBoard(bufio.NewReader(strings.NewReader(s)))
 	if err != nil {

@@ -97,9 +97,15 @@ type Robot struct {
 	Colour Colour
 }
 
+type Move struct {
+	Robot    Robot
+	Position Position
+}
+
 type State struct {
 	board  *Board
 	robots map[Position]Robot
+	path   []Move
 }
 
 func (s *State) AddRobot(pos Position, robot Robot) error {
@@ -157,6 +163,15 @@ func (s *State) Move(pos Position, dir Direction) Position {
 	}
 }
 
+// Clone returns a state with the same robot positions as this one.
+func (s *State) Clone() *State {
+	n := s.board.NewState()
+	for p, r := range s.robots {
+		n.robots[p] = r
+	}
+	return n
+}
+
 const minRobots = 4
 
 type Board struct {
@@ -177,7 +192,7 @@ func NewBoard(size int) (*Board, error) {
 }
 
 func (b *Board) NewState() *State {
-	return &State{b, make(map[Position]Robot)}
+	return &State{b, make(map[Position]Robot), nil}
 }
 
 func (b *Board) getBlock(pos Position) Block {

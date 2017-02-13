@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 
@@ -9,9 +10,13 @@ import (
 )
 
 func main() {
-	b, _, err := ricochet.ReadBoard(bufio.NewReader(os.Stdin))
+	b, s, err := ricochet.ReadBoard(bufio.NewReader(os.Stdin))
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", b.Valid())
+	if !b.Valid() {
+		panic(errors.New("invalid board"))
+	}
+	ml := s.Solve(ricochet.Token{ricochet.ShapeCircle, ricochet.ColourBlue})
+	fmt.Printf("%+v\n", ml)
 }
